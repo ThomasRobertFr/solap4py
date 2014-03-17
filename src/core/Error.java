@@ -2,7 +2,7 @@ package src.core;
 
 import javax.json.*;
 
-enum Type {
+enum ErrorType {
 	BAD_REQUEST, NOT_SUPPORTED
 };
 
@@ -10,9 +10,9 @@ enum Type {
 public class Error extends Exception {
 
 	private String description;
-	private Type type;
+	private ErrorType type;
 
-	public Error(Type type, String description) {
+	public Error(ErrorType type, String description) {
 		super(description);
 		this.type = type;
 		this.description = description;
@@ -20,8 +20,13 @@ public class Error extends Exception {
 	}
 
 	// TODO
-	public void getJSON() {
+	public JsonObject getJSON() {
+		JsonObject objectJson = Json.createObjectBuilder()
+				.add("error", type.toString())
+				.add("data",description)
+				.build();
 		
+		return objectJson;
 	}
 
 }
