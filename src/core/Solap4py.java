@@ -39,8 +39,17 @@ public class Solap4py {
 		
 	}
 	
-	public void select() {
+	public String select(String input) {
+		JsonObject inputJson = Json.createReader(new StringReader(input)).readObject();
+		JsonObjectBuilder output = Json.createObjectBuilder();
 		
+		String schema = inputJson.getString("schema");
+		JsonObject cubeJson = inputJson.getJsonObject("cube");
+		String cubeName = cubeJson.getString("name");
+		JsonArray measuresJson = cubeJson.getJsonArray("measures");
+		//TODO		
+		
+		return "";
 	}
 	
 	
