@@ -1,9 +1,9 @@
-package core;
+package src.core;
 
 
 
+import javax.json.*;
 import org.olap4j.*;
-
 
 
 public class Solap4py {
@@ -21,3 +21,4 @@ public class Solap4py {
 		
 	}
 	
+}

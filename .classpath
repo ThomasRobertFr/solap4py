@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-<<<<<<< HEAD
-	<classpathentry kind="lib" path="/usr/share/java/olap4j.jar"/>
-=======
->>>>>>> fdcdf32482fafa5e48ccaac46f4b305310a28efb
+	<classpathentry kind="lib" path="lib/javax.json-api-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/olap4j-1.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/olap4j-xmla-1.2.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
