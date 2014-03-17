@@ -2,6 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+<<<<<<< HEAD
 	<classpathentry kind="lib" path="/usr/share/java/olap4j.jar"/>
+=======
+>>>>>>> fdcdf32482fafa5e48ccaac46f4b305310a28efb
 	<classpathentry kind="output" path="bin"/>
 </classpath>
