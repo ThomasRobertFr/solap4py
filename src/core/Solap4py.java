@@ -20,8 +20,6 @@ import org.olap4j.metadata.Schema;
 
 
 public class Solap4py {
-
-	
 	
 	private OlapConnection olapConnection;
 	
@@ -64,6 +62,8 @@ public String select(String input) {
 			try{
 				Catalog catalog = olapConnection.getOlapCatalog();
 				NamedList<Schema> schemas = catalog.getSchemas();
+				
+				// TODO Get schema named "schema"
 			}
 			catch(OlapException e){
 				error = true;
@@ -72,7 +72,6 @@ public String select(String input) {
 			if(error){
 				//TODO 
 			}
-			
 			else{
 				
 				JsonObject cubeJson;
@@ -84,16 +83,19 @@ public String select(String input) {
 				}
 				
 				if(cubeJson != null){
-					
-
 					String cubeName;
 					try{
 						cubeName = cubeJson.getString("name");
+						// TODO Get cube in olap source
 					}
 					catch(JsonException e){
 						cubeName = null;
 						res = new Error(ErrorType.BAD_REQUEST, "name of cube cannot be found").getJSON().toString();
 					}
+					/*
+					catch(){
+						TODO error if cube does not exist in olap source
+					}*/
 					
 					if(cubeName != null){
 						
