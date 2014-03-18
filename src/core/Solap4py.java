@@ -15,6 +15,7 @@ import javax.json.JsonObjectBuilder;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
 import org.olap4j.metadata.Catalog;
+import org.olap4j.metadata.Dimension;
 import org.olap4j.metadata.NamedList;
 import org.olap4j.metadata.Schema;
 
@@ -38,11 +39,11 @@ public class Solap4py {
 	}
 	
 public String select(String input) {
-		
 		String res = new String();
 		JsonObject inputJson = Json.createReader(new StringReader(input)).readObject();
 		JsonObjectBuilder output = Json.createObjectBuilder();
 		boolean error = false;
+		Dimension dimensionObject = null; //TODO todo
 		
 		String schema;
 		try{
@@ -119,7 +120,7 @@ public String select(String input) {
 						
 						String dimensionJsonRes;
 						try{
-							dimensionJsonRes = selectDimension(dimension, res);
+							dimensionJsonRes = selectDimension(dimension, dimensionObject, res);
 						}
 						catch(Error e){
 							res = e.getJSON().toString();
@@ -140,8 +141,9 @@ public String select(String input) {
 	
 	
 	
-	private String selectDimension(JsonObject dimension, String json) throws Error{
+	private String selectDimension(JsonObject dimension, Dimension dimensionObject, String json) throws Error{
 		String res = new String(json);
+		Dimension subDimensionObject = null;
 		
 		String dimensionName;
 		try{
@@ -200,7 +202,7 @@ public String select(String input) {
 			subDimension = null;
 		}
 		if(subDimension != null){
-			res = selectDimension(subDimension, res);
+			res = selectDimension(subDimension, subDimensionObject, res);
 		}
 			
 
