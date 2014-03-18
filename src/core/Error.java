@@ -1,6 +1,7 @@
 package src.core;
 
-import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonObject;
 
 enum ErrorType {
 	BAD_REQUEST, NOT_SUPPORTED
@@ -29,7 +30,7 @@ public class Error extends Exception {
 	}
 
 	public static void controle() throws Error {
-		throw new Error(ErrorType.BAD_REQUEST, "Description de l'erreur");
+		throw new Error(ErrorType.BAD_REQUEST, "Error description");
 	}
 
 	public static void main(java.lang.String[] args) {
