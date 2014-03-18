@@ -1,4 +1,4 @@
-package src.core;
+package core;
 
 import javax.json.Json;
 import javax.json.JsonObject;

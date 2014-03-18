@@ -1,4 +1,4 @@
-package src.core;
+package core;
 
 import java.io.StringReader;
 import java.sql.Connection;
