@@ -1,6 +1,7 @@
-package src.core;
+package core;
 
-import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonObject;
 
 enum ErrorType {
 	BAD_REQUEST, NOT_SUPPORTED
@@ -19,14 +20,26 @@ public class Error extends Exception {
 
 	}
 
-	// TODO
 	public JsonObject getJSON() {
+
 		JsonObject objectJson = Json.createObjectBuilder()
-				.add("error", type.toString())
-				.add("data",description)
-				.build();
-		
+				.add("error", type.toString()).add("data", description).build();
+
 		return objectJson;
+
+	}
+
+	public static void controle() throws Error {
+		throw new Error(ErrorType.BAD_REQUEST, "Error description");
+	}
+
+	public static void main(java.lang.String[] args) {
+		try {
+			controle();
+		} catch (Error e) {
+			System.out.println(e.getJSON().toString());
+		}
+		;
 	}
 
 }
