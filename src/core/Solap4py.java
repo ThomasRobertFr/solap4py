@@ -45,16 +45,16 @@ public String select(String input) {
 		boolean error = false;
 		Dimension dimensionObject = null; //TODO todo
 		
-		String schema;
+		String stringSchema;
 		try{
-			schema = inputJson.getString("schema");
+			stringSchema = inputJson.getString("schema");
 		}
 		catch(JsonException e){
-			schema = null;
+			stringSchema = null;
 		}
 		
 		
-		if(schema != null){
+		if(stringSchema != null){
 			output.add("error", "OK");
 			JsonObjectBuilder values = Json.createObjectBuilder();
 			
@@ -64,7 +64,8 @@ public String select(String input) {
 				Catalog catalog = olapConnection.getOlapCatalog();
 				NamedList<Schema> schemas = catalog.getSchemas();
 				
-				// TODO Get schema named "schema"
+				// Get schema named stringSchema
+				Schema schema = schemas.get(stringSchema);
 			}
 			catch(OlapException e){
 				error = true;
