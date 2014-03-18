@@ -3,6 +3,7 @@ package src.core;
 import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.json.Json;
@@ -12,18 +13,13 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 
 import org.olap4j.OlapConnection;
+import org.olap4j.OlapDatabaseMetaData;
 import org.olap4j.OlapException;
 
 
 public class Solap4py {
-
-
-	
-	
-	private static final String[] levels = { "schema", "cube", "dimension"  };
 	
 	private OlapConnection olapConnection;
-
 	
 	public Solap4py() {
 		try {
@@ -46,32 +42,19 @@ public class Solap4py {
 	
 	
 	
-	public String getMetadata(String param) {
+	public String getMetadata(String param) throws Exception {
 
-		org.olap4j.metadata.Catalog catalog = null;
-		
-		try {
-			catalog = this.olapConnection.getOlapCatalog();
-		} catch (OlapException e) {
-
-		}
-		
 		JsonObject query = Json.createReader(new StringReader(param)).readObject();
-		JsonObjectBuilder result = Json.createObjectBuilder();
-
-		for (String level : Solap4py.levels) {
-			JsonArray array = query.getJsonArray(level);
-			for (JsonString element : array.getValuesAs(JsonString.class)) {
-				
-			}
-		}
+		Metadata m = new Metadata(this.olapConnection);
 		
-		
-		return result.build().toString();
+		return m.query(query).toString();
 	}
 
 	
-	public static void main(String[] args) {
+	
+	
+	
+	public static void main(String[] args) throws Exception {
 		
 		String query = "{\"schema\" : [ \"Traffic\"],\"cube\" : [],\"dimension\" : [],\"measure\" : [],\"hierarchy\" : [],\"level\" : [],\"member\" : [],\"property\" : []}";
 		
