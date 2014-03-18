@@ -15,6 +15,7 @@ import javax.json.JsonObjectBuilder;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
 import org.olap4j.metadata.Catalog;
+import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Dimension;
 import org.olap4j.metadata.NamedList;
 import org.olap4j.metadata.Schema;
@@ -43,7 +44,7 @@ public String select(String input) {
 		JsonObject inputJson = Json.createReader(new StringReader(input)).readObject();
 		JsonObjectBuilder output = Json.createObjectBuilder();
 		boolean error = false;
-		Dimension dimensionObject = null; //TODO todo
+		Cube cubeObject = null; //TODO todo
 		
 		String stringSchema;
 		try{
@@ -121,7 +122,7 @@ public String select(String input) {
 						
 						String dimensionJsonRes;
 						try{
-							dimensionJsonRes = selectDimension(dimension, dimensionObject, res);
+							dimensionJsonRes = selectDimension(dimension, cubeObject, res);
 						}
 						catch(Error e){
 							res = e.getJSON().toString();
@@ -142,18 +143,21 @@ public String select(String input) {
 	
 	
 	
-	private String selectDimension(JsonObject dimension, Dimension dimensionObject, String json) throws Error{
+	private String selectDimension(JsonObject dimension, Cube cubeObject, String json) throws Error{
 		String res = new String(json);
-		Dimension subDimensionObject = null;
+		Dimension dimensionObject = null;
 		
 		String dimensionName;
 		try{
 			dimensionName = dimension.getString("name");
+			NamedList<Dimension> allDimensions = cubeObject.getDimensions();
+			
 		}
 		catch(JsonException e){
 			dimensionName = null;
 			throw new Error(ErrorType.BAD_REQUEST, "name of dimension cannot be found");
 		}
+		
 		
 		
 		boolean range;
@@ -203,7 +207,7 @@ public String select(String input) {
 			subDimension = null;
 		}
 		if(subDimension != null){
-			res = selectDimension(subDimension, subDimensionObject, res);
+			res = selectDimension(subDimension, cubeObject, res);
 		}
 			
 
