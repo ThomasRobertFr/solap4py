@@ -2,10 +2,12 @@
 <classpath>
 	<classpathentry kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/javax.json-api-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/olap4j-1.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/olap4j-xmla-1.2.0.jar"/>
-	<classpathentry kind="lib" path="lib/json_simple.jar"/>
 	<classpathentry kind="lib" path="lib/javax.json-1.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/olap4j-1.2.0-sources.jar"/>
+	<classpathentry kind="lib" path="lib/olap4j-jdk14-1.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/olap4j-tck-1.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
