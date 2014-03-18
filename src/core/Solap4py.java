@@ -1,5 +1,6 @@
 package core;
 
+
 import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,10 +8,15 @@ import java.sql.SQLException;
 
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.olap4j.OlapConnection;
+import org.olap4j.OlapException;
+import org.olap4j.metadata.Catalog;
+import org.olap4j.metadata.NamedList;
+import org.olap4j.metadata.Schema;
 
 
 public class Solap4py {
@@ -33,17 +39,170 @@ public class Solap4py {
 		
 	}
 	
-	public String select(String input) {
+public String select(String input) {
+		
+		String res = new String();
 		JsonObject inputJson = Json.createReader(new StringReader(input)).readObject();
 		JsonObjectBuilder output = Json.createObjectBuilder();
+		boolean error = false;
 		
-		String schema = inputJson.getString("schema");
-		JsonObject cubeJson = inputJson.getJsonObject("cube");
-		String cubeName = cubeJson.getString("name");
-		JsonArray measuresJson = cubeJson.getJsonArray("measures");
-		//TODO		
+		String schema;
+		try{
+			schema = inputJson.getString("schema");
+		}
+		catch(JsonException e){
+			schema = null;
+		}
 		
-		return "";
+		
+		if(schema != null){
+			output.add("error", "OK");
+			JsonObjectBuilder values = Json.createObjectBuilder();
+			
+			
+			
+			try{
+				Catalog catalog = olapConnection.getOlapCatalog();
+				NamedList<Schema> schemas = catalog.getSchemas();
+			}
+			catch(OlapException e){
+				error = true;
+			}
+			
+			if(error){
+				//TODO 
+			}
+			
+			else{
+				
+				JsonObject cubeJson;
+				try{
+					cubeJson = inputJson.getJsonObject("cube");
+				}
+				catch(JsonException e){
+					cubeJson = null;
+				}
+				
+				if(cubeJson != null){
+					
+
+					String cubeName;
+					try{
+						cubeName = cubeJson.getString("name");
+					}
+					catch(JsonException e){
+						cubeName = null;
+						res = new Error(ErrorType.BAD_REQUEST, "name of cube cannot be found").getJSON().toString();
+					}
+					
+					if(cubeName != null){
+						
+					
+						JsonArray measuresJson;
+						try{
+							measuresJson = cubeJson.getJsonArray("measures");
+						}
+						catch(JsonException e){
+							measuresJson = null;
+							//TODO measures = all measures
+						}
+						
+						JsonObject dimension;
+						try{
+							dimension = cubeJson.getJsonObject("dimension");
+						}
+						catch(JsonException e){
+							dimension = null;
+						}
+						
+						String dimensionJsonRes;
+						try{
+							dimensionJsonRes = selectDimension(dimension, res);
+						}
+						catch(Error e){
+							res = e.getJSON().toString();
+						}
+						
+						
+					}
+					
+					
+				}
+			}
+			
+		}
+		
+		res = output.build().toString();
+		return res;
+	}
+	
+	
+	
+	private String selectDimension(JsonObject dimension, String json) throws Error{
+		String res = new String(json);
+		
+		String dimensionName;
+		try{
+			dimensionName = dimension.getString("name");
+		}
+		catch(JsonException e){
+			dimensionName = null;
+			throw new Error(ErrorType.BAD_REQUEST, "name of dimension cannot be found");
+		}
+		
+		
+		boolean range;
+		try{
+			range = dimension.getBoolean("range");
+		}
+		catch(JsonException e){
+			range = false;
+		}
+		JsonArray ids;
+		try{
+			ids = dimension.getJsonArray("id");
+		}
+		catch(JsonException e){
+			//TODO ids = all members
+		}
+		
+		String hierarchyName;
+		try{
+			hierarchyName = dimension.getString("hierarchy");
+		}
+		catch(JsonException e){
+			//TODO hierarchyName = first hierarchy in xml;
+		}
+		
+		String aggregation;
+		try{
+			aggregation = dimension.getString("aggregation");
+		}
+		catch(JsonException e){
+			aggregation = null;
+		}
+		
+		boolean measure;
+		try{
+			measure = dimension.getBoolean("measure");
+		}
+		catch(JsonException e){
+			measure = false;
+		}
+		
+		JsonObject subDimension;
+		try{
+			subDimension = dimension.getJsonObject("dimension");
+		}
+		catch(JsonException e){
+			subDimension = null;
+		}
+		if(subDimension != null){
+			res = selectDimension(subDimension, res);
+		}
+			
+
+		return res;
 	}
 	
 	
