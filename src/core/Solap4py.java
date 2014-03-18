@@ -16,9 +16,6 @@ import org.olap4j.OlapException;
 
 
 public class Solap4py {
-
-
-	
 	
 	private static final String[] levels = { "schema", "cube", "dimension"  };
 	
