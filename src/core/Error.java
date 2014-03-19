@@ -7,7 +7,8 @@ enum ErrorType {
 	BAD_REQUEST, 
 	NOT_SUPPORTED, 
 	SERVER_ERROR, 
-	NO_HIERARCHY
+	NO_HIERARCHY,
+	DIMENSION_ID_COUNT
 };
 
 @SuppressWarnings("serial")

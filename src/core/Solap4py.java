@@ -5,6 +5,8 @@ import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -18,8 +20,12 @@ import org.olap4j.metadata.Catalog;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Dimension;
 import org.olap4j.metadata.Hierarchy;
+import org.olap4j.metadata.Level;
+import org.olap4j.metadata.Member;
 import org.olap4j.metadata.NamedList;
 import org.olap4j.metadata.Schema;
+
+
 
 
 public class Solap4py {
@@ -163,7 +169,7 @@ public String select(String input) {
 			throw new Error(ErrorType.BAD_REQUEST, "name of dimension cannot be found");
 		}
 		
-		
+		NamedList<Hierarchy> allHierarchies = dimensionObject.getHierarchies();
 		
 		boolean range;
 		try{
@@ -172,30 +178,42 @@ public String select(String input) {
 		catch(JsonException e){
 			range = false;
 		}
-		JsonArray ids;
-		try{
-			ids = dimension.getJsonArray("id");
-		}
-		catch(JsonException e){
-			//TODO ids = all members
-		}
 		
 		String hierarchyName;
 		try{
 			hierarchyName = dimension.getString("hierarchy");
-			NamedList<Hierarchy> allHierarchies = dimensionObject.getHierarchies();
 			hierarchyObject = allHierarchies.get(hierarchyName);
 		}
 		catch(JsonException e){
-			//TODO hierarchyName = first hierarchy in xml;
-			NamedList<Hierarchy> allHierarchies = dimensionObject.getHierarchies();
 			if(allHierarchies.isEmpty())
 				throw new Error(ErrorType.NO_HIERARCHY, new String("No Hierarchy can be found in ").concat(dimensionName).concat(" dimension"));
 			else
-				hierarchyObject = allHierarchies.get(0);
+				hierarchyObject = dimensionObject.getDefaultHierarchy();
 		}
 		
-		String aggregation;
+		
+		JsonArray ids;
+		try{
+			ids = dimension.getJsonArray("id");
+			if(range && ids.size() != 2)
+				throw new Error(ErrorType.DIMENSION_ID_COUNT, "there should be 2 ID because of range = true");
+		}
+		catch(JsonException e){
+			NamedList<Level> allLevels = hierarchyObject.getLevels();
+			ArrayList<List<Member> > allMembers = new ArrayList<List<Member> >();
+			for(Level i : allLevels){
+				try{
+					allMembers.add(i.getMembers());
+				}
+				catch (OlapException e1){
+					throw new Error(ErrorType.BAD_REQUEST, "Database error");
+				}
+			}
+		}
+		
+		
+		
+		String aggregation = null;
 		try{
 			aggregation = dimension.getString("aggregation");
 		}
