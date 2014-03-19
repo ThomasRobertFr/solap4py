@@ -166,7 +166,7 @@ public String select(String input) {
 			throw new Error(ErrorType.BAD_REQUEST, "name of dimension cannot be found");
 		}
 		
-		
+		NamedList<Hierarchy> allHierarchies = dimensionObject.getHierarchies();
 		
 		boolean range;
 		try{
@@ -175,6 +175,20 @@ public String select(String input) {
 		catch(JsonException e){
 			range = false;
 		}
+		
+		String hierarchyName;
+		try{
+			hierarchyName = dimension.getString("hierarchy");
+			hierarchyObject = allHierarchies.get(hierarchyName);
+		}
+		catch(JsonException e){
+			if(allHierarchies.isEmpty())
+				throw new Error(ErrorType.NO_HIERARCHY, new String("No Hierarchy can be found in ").concat(dimensionName).concat(" dimension"));
+			else
+				hierarchyObject = dimensionObject.getDefaultHierarchy();
+		}
+		
+		
 		JsonArray ids;
 		try{
 			ids = dimension.getJsonArray("id");
@@ -184,25 +198,19 @@ public String select(String input) {
 		catch(JsonException e){
 			NamedList<Level> allLevels = hierarchyObject.getLevels();
 			ArrayList<List<Member> > allMembers = new ArrayList<List<Member> >();
-			//TODO ids = all members
+			for(Level i : allLevels){
+				try{
+					allMembers.add(i.getMembers());
+				}
+				catch (OlapException e1){
+					throw new Error(ErrorType.BAD_REQUEST, "Database error");
+				}
+			}
 		}
 		
-		String hierarchyName;
-		try{
-			hierarchyName = dimension.getString("hierarchy");
-			NamedList<Hierarchy> allHierarchies = dimensionObject.getHierarchies();
-			hierarchyObject = allHierarchies.get(hierarchyName);
-		}
-		catch(JsonException e){
-			//TODO hierarchyName = first hierarchy in xml;
-			NamedList<Hierarchy> allHierarchies = dimensionObject.getHierarchies();
-			if(allHierarchies.isEmpty())
-				throw new Error(ErrorType.NO_HIERARCHY, new String("No Hierarchy can be found in ").concat(dimensionName).concat(" dimension"));
-			else
-				hierarchyObject = dimensionObject.getDefaultHierarchy();
-		}
 		
-		String aggregation;
+		
+		String aggregation = null;
 		try{
 			aggregation = dimension.getString("aggregation");
 		}
