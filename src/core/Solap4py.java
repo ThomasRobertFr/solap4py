@@ -74,15 +74,18 @@ public String select(String input) {
 				
 				// Get schema named stringSchema
 				Schema schema = schemas.get(stringSchema);
+				throw new Error(ErrorType.BAD_REQUEST, "Schema not found");
 			}
-			catch(OlapException e){
+			catch(Error err){
+				res = err.getJSON().toString();
+				error = true;
+			}
+			catch(OlapException jex){
+				res = new Error(ErrorType.SERVER_ERROR, jex.getMessage()).getJSON().toString();
 				error = true;
 			}
 			
-			if(error){
-				//TODO 
-			}
-			else{
+			if (!error){
 				
 				JsonObject cubeJson;
 				try{
