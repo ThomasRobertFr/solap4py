@@ -4,7 +4,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 enum ErrorType {
-	BAD_REQUEST, NOT_SUPPORTED
+	BAD_REQUEST, NOT_SUPPORTED, NO_HIERARCHY
 };
 
 @SuppressWarnings("serial")
