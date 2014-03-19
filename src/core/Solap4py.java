@@ -17,6 +17,7 @@ import org.olap4j.OlapException;
 import org.olap4j.metadata.Catalog;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Dimension;
+import org.olap4j.metadata.Hierarchy;
 import org.olap4j.metadata.NamedList;
 import org.olap4j.metadata.Schema;
 
@@ -149,12 +150,13 @@ public String select(String input) {
 	private String selectDimension(JsonObject dimension, Cube cubeObject, String json) throws Error{
 		String res = new String(json);
 		Dimension dimensionObject = null;
+		Hierarchy hierarchyObject = null;
 		
 		String dimensionName;
 		try{
 			dimensionName = dimension.getString("name");
 			NamedList<Dimension> allDimensions = cubeObject.getDimensions();
-			
+			dimensionObject = allDimensions.get(dimensionName);
 		}
 		catch(JsonException e){
 			dimensionName = null;
@@ -181,9 +183,16 @@ public String select(String input) {
 		String hierarchyName;
 		try{
 			hierarchyName = dimension.getString("hierarchy");
+			NamedList<Hierarchy> allHierarchies = dimensionObject.getHierarchies();
+			hierarchyObject = allHierarchies.get(hierarchyName);
 		}
 		catch(JsonException e){
 			//TODO hierarchyName = first hierarchy in xml;
+			NamedList<Hierarchy> allHierarchies = dimensionObject.getHierarchies();
+			if(allHierarchies.isEmpty())
+				throw new Error(ErrorType.NO_HIERARCHY, new String("No Hierarchy can be found in ").concat(dimensionName).concat(" dimension"));
+			else
+				hierarchyObject = allHierarchies.get(0);
 		}
 		
 		String aggregation;
