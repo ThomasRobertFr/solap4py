@@ -93,7 +93,7 @@ public String select(String input) {
 					String cubeName;
 					try{
 						cubeName = cubeJson.getString("name");
-						// TODO Get cube in olap source
+						// Get cube in olap source
 					}
 					catch(JsonException e){
 						cubeName = null;
