@@ -11,11 +11,15 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 import org.olap4j.Axis;
+import org.olap4j.Cell;
+import org.olap4j.CellSet;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
+import org.olap4j.Position;
 import org.olap4j.mdx.IdentifierNode;
 import org.olap4j.metadata.Catalog;
 import org.olap4j.metadata.Cube;
@@ -100,6 +104,9 @@ public class Solap4py {
 						for (JsonValue measureJson : measuresJson) {
 							myQuery.getDimension("Measures").include(cubeObject.lookupMember(IdentifierNode.ofNames("Measures", measureJson.toString()).getSegmentList()));
 						}
+						
+						myQuery.validate();
+						result = this.executeSelect(myQuery).toString();
 					}
 				}
 			} 
@@ -200,6 +207,33 @@ public class Solap4py {
 		return res;
 	}
 
+	/**
+	 * Execute a query and format the result to get a normalized JsonObject
+	 * @param myQuery query to be executed
+	 * @return normalized JsonObject
+	 * @throws OlapException  If something goes sour, an OlapException will be thrown to the caller. It could be caused by many things, like a stale connection. Look at the root cause for more details.
+	 */
+	private JsonObject executeSelect(Query myQuery) throws OlapException {
+		CellSet resultCellSet = myQuery.execute();
+		
+		JsonObjectBuilder result = Json.createObjectBuilder();
+		result.add("error", "OK");
+		JsonObjectBuilder data = Json.createObjectBuilder();
+
+		// TODO get the data and format the returned Json
+		for (Position axis_rows : resultCellSet.getAxes().get(Axis.ROWS.axisOrdinal()).getPositions()) {
+			for (Position axis_columns : resultCellSet.getAxes().get(Axis.COLUMNS.axisOrdinal()).getPositions()) {
+				// Just an exemple of how we browse the CellSet...
+				Cell currentCell = resultCellSet.getCell(axis_rows, axis_columns);
+				
+			}	
+		}
+		
+		result.add("data", data.build());
+
+		return result.build();
+	}
+	
 	public String getMetadata(String param) throws Exception {
 
 		JsonObject query = Json.createReader(new StringReader(param))
