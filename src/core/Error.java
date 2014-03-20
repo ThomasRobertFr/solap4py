@@ -2,6 +2,7 @@ package core;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 enum ErrorType {
 	BAD_REQUEST, 
@@ -26,8 +27,12 @@ public class Error extends Exception {
 
 	public JsonObject getJSON() {
 
-		JsonObject objectJson = Json.createObjectBuilder()
-				.add("error", type.toString()).add("data", description).build();
+		JsonObjectBuilder objectJsonBuilder = Json.createObjectBuilder();
+				
+		objectJsonBuilder.add("error", type.toString());
+		objectJsonBuilder.add("data", description);
+		
+		JsonObject objectJson = objectJsonBuilder.build();
 
 		return objectJson;
 
