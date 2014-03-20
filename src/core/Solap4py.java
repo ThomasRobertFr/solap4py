@@ -11,10 +11,12 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 
+import org.olap4j.Axis;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
+import org.olap4j.mdx.IdentifierNode;
 import org.olap4j.metadata.Catalog;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Dimension;
@@ -23,6 +25,9 @@ import org.olap4j.metadata.Level;
 import org.olap4j.metadata.Member;
 import org.olap4j.metadata.NamedList;
 import org.olap4j.metadata.Schema;
+import org.olap4j.query.Query;
+import org.olap4j.query.QueryDimension;
+
 
 public class Solap4py {
 
@@ -49,10 +54,9 @@ public class Solap4py {
 		String result = null;
 		JsonObject inputJson = Json.createReader(new StringReader(input)).readObject();
 		
-		boolean error = false;
 		Schema schema = null;
 		Cube cubeObject = null; // TODO todo
-
+		
 		try {
 			try {
 				// If not, result stays "null"
@@ -61,17 +65,19 @@ public class Solap4py {
 					if (inputJson.containsKey("cube")) {
 						schema = this.catalog.getSchemas().get(inputJson.getString("schema"));
 						JsonObject cubeJson = inputJson.getJsonObject("cube");
+						JsonArray measuresJson;
 						if (cubeJson.containsKey("name")) {
 							// Get the Cube object (Olap4J) associated with this name
 							cubeObject = schema.getCubes().get(cubeJson.getString("name"));
 							
 							if (cubeJson.containsKey("measures")) {
-								JsonArray measuresJson = cubeJson.getJsonArray("measures");
+								measuresJson = cubeJson.getJsonArray("measures");
 								// Measures from array
 							} else {
-								// All the measures
+								throw new Error(ErrorType.BAD_REQUEST, "No measure specified");
 							}
 							
+							// TODO by Pierre.
 							if (cubeJson.containsKey("dimension")){
 								// Not implemented
 								selectDimension(cubeJson.getJsonObject("dimension"), cubeObject );
@@ -82,10 +88,26 @@ public class Solap4py {
 						else {
 							throw new Error(ErrorType.BAD_REQUEST, "Cube name not specified");
 						}
+						
+						// Initialize the query to be executed
+						Query myQuery = new Query("Select Query", cubeObject);
+
+						QueryDimension measuresDim = myQuery.getDimension("Measures");
+						// Put the "Measures" dimension on columns of the expected result
+						myQuery.getAxis(Axis.COLUMNS).addDimension(measuresDim);
+
+						// Add each measures on columns
+						for (JsonValue measureJson : measuresJson) {
+							myQuery.getDimension("Measures").include(cubeObject.lookupMember(IdentifierNode.ofNames("Measures", measureJson.toString()).getSegmentList()));
+						}
 					}
 				}
-			} catch (OlapException olapEx) {
+			} 
+			catch (OlapException olapEx) {
 				throw new Error(ErrorType.SERVER_ERROR, olapEx.getMessage());
+			}
+			catch (SQLException sqlEx) {
+				throw new Error(ErrorType.SERVER_ERROR, sqlEx.getMessage());
 			}
 		} catch (Error err) {
 			result = err.getJSON().toString();
