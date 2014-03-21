@@ -149,7 +149,7 @@ public String select(String input) {
 			dimensionName = null;
 			throw new Error(ErrorType.BAD_REQUEST, "name of dimension cannot be found");
 		}
-		
+	
 		
 		boolean range;
 		try{
@@ -216,17 +216,16 @@ public String select(String input) {
 		return m.query(query).toString();
 	}
 
-	
-	
+
 	
 	
 	public static void main(String[] args) throws Exception {
 		
-		String query = "{\"schema\" : [ \"Traffic\"],\"cube\" : [],\"dimension\" : [],\"measure\" : [],\"hierarchy\" : [],\"level\" : [],\"member\" : [],\"property\" : []}";
+		String query = "{ \"from\" : [\"Traffic\", \"Traffic\", \"Zone\", \"Zone.Name\", \"Name1\"], \"get\" : \"property\" }";
 		
 		Solap4py p = new Solap4py();
 		String metadata = p.getMetadata(query);
-	
+		
 		System.out.println(metadata);
 	}
 	
