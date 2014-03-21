@@ -21,7 +21,7 @@ public class Error extends Exception {
 	public Error(ErrorType type, String description) {
 		super(description);
 		this.type = type;
-		this.description = description;
+		this.description = description == null ? new String("null") : description;
 
 	}
 

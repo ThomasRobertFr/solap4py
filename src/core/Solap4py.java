@@ -77,6 +77,17 @@ public class Solap4py {
 							if (cubeJson.containsKey("measures")) {
 								measuresJson = cubeJson.getJsonArray("measures");
 								// Measures from array
+								QueryDimension measuresDim = myQuery.getDimension("Measures");
+								// Put the "Measures" dimension on columns of the expected result
+								myQuery.getAxis(Axis.COLUMNS).addDimension(measuresDim);
+								
+								// Add each measures on columns
+								System.out.println(myQuery.getSelect().toString());
+								for (JsonValue measureJson : measuresJson) {
+									System.out.println(cubeObject.lookupMember(IdentifierNode.ofNames("Measures", measureJson.toString()).getSegmentList()));
+									myQuery.getDimension("Measures").include(cubeObject.lookupMember(IdentifierNode.ofNames("Measures", measureJson.toString()).getSegmentList()));
+									System.out.println("passed");
+								}
 							} else {
 								throw new Error(ErrorType.BAD_REQUEST, "No measure specified");
 							}
@@ -93,16 +104,7 @@ public class Solap4py {
 							throw new Error(ErrorType.BAD_REQUEST, "Valid cube name not specified");
 						}
 						
-						
-
-						QueryDimension measuresDim = myQuery.getDimension("Measures");
-						// Put the "Measures" dimension on columns of the expected result
-						myQuery.getAxis(Axis.COLUMNS).addDimension(measuresDim);
-
-						// Add each measures on columns
-						for (JsonValue measureJson : measuresJson) {
-							myQuery.getDimension("Measures").include(cubeObject.lookupMember(IdentifierNode.ofNames("Measures", measureJson.toString()).getSegmentList()));
-						}
+					
 					}
 				}
 			} 
@@ -111,6 +113,9 @@ public class Solap4py {
 			}
 			catch (SQLException sqlEx) {
 				throw new Error(ErrorType.SERVER_ERROR, sqlEx.getMessage());
+			}
+			catch(Exception ex){
+				throw new Error(ErrorType.SERVER_ERROR, ex.getMessage());
 			}
 		} catch (Error err) {
 			result = err.getJSON().toString();
@@ -135,14 +140,13 @@ public class Solap4py {
 			
 			JsonArray ids;
 			try {
-				
 				String hierarchyName;
 				NamedList<Hierarchy> allHierarchies = dimObject.getDimension().getHierarchies();
 				Hierarchy hierarchyObject;
 				try {
 					hierarchyName = dimension.getString("hierarchy");
 					hierarchyObject = allHierarchies.get(hierarchyName);
-				} catch (JsonException e) {
+				} catch (Exception e) {
 					if (allHierarchies.isEmpty())
 						throw new Error(ErrorType.NO_HIERARCHY, new String(
 								"No Hierarchy can be found in ").concat(dimensionName)
@@ -163,7 +167,12 @@ public class Solap4py {
 				}
 				else if(!range && ids.isEmpty()){
 					try {
-						myQuery.getDimension(dimensionName).include(cubeObject.lookupMember(IdentifierNode.ofNames(dimensionName, hierarchyName).getSegmentList()));
+						if(dimensionName.equals(hierarchyName)){
+							myQuery.getDimension(dimensionName).include(cubeObject.lookupMember(IdentifierNode.ofNames(dimensionName).getSegmentList()));
+						}
+						else{
+							myQuery.getDimension(dimensionName).include(cubeObject.lookupMember(IdentifierNode.ofNames(dimensionName, hierarchyName).getSegmentList()));
+						}
 					} catch (OlapException e) {
 						throw new Error(ErrorType.SERVER_ERROR, e.getMessage()); 
 					}
@@ -172,9 +181,18 @@ public class Solap4py {
 					// Add each id on rows
 					for (JsonValue idJson : ids) {
 						try {
-							myQuery.getDimension(dimensionName).include(cubeObject.lookupMember(IdentifierNode.ofNames(dimensionName, hierarchyName, idJson.toString()).getSegmentList()));
-						} catch (OlapException e) {
-							throw new Error(ErrorType.SERVER_ERROR, e.getMessage()); 
+							if(dimensionName.equals(hierarchyName)){
+								myQuery.getDimension(dimensionName).include(cubeObject.lookupMember(IdentifierNode.ofNames(dimensionName, idJson.toString()).getSegmentList()));
+							}
+							else{
+								myQuery.getDimension(dimensionName).include(cubeObject.lookupMember(IdentifierNode.ofNames(dimensionName, hierarchyName, idJson.toString()).getSegmentList()));
+							}
+						}
+					/*	catch (OlapException err) {
+							throw new Error(ErrorType.SERVER_ERROR, err.getMessage()); 
+						}*/
+						catch (Exception err) {
+							throw new Error(ErrorType.SERVER_ERROR, err.getMessage()); 
 						}
 					}
 				}
@@ -185,35 +203,6 @@ public class Solap4py {
 		} catch (JsonException e) {
 			throw new Error(ErrorType.BAD_REQUEST,
 					"name of dimension cannot be found");
-		}
-//<<<<<<< HEAD
-//		catch(JsonException e){
-//			dimensionName = null;
-//			throw new Error(ErrorType.BAD_REQUEST, "name of dimension cannot be found");
-//		}
-	
-		
-		boolean range;
-		try{
-			range = dimension.getBoolean("range");
-		}
-		catch(JsonException e){
-			range = false;
-		}
-		JsonArray ids;
-		try{
-			ids = dimension.getJsonArray("id");
-		}
-		catch(JsonException e){
-			//TODO ids = all members
-		}
-		
-		String hierarchyName;
-		try{
-			hierarchyName = dimension.getString("hierarchy");
-		}
-		catch(JsonException e){
-			//TODO hierarchyName = first hierarchy in xml;
 		}
 
 		
