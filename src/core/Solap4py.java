@@ -57,7 +57,7 @@ public class Solap4py {
 		Cube cubeObject = null;
 		
 		Query myQuery = null;
-		
+
 		try {
 			try {
 				// If not, result stays "null"
@@ -67,11 +67,12 @@ public class Solap4py {
 						schema = this.catalog.getSchemas().get(inputJson.getString("schema"));
 						JsonObject cubeJson = inputJson.getJsonObject("cube");
 						JsonArray measuresJson;
-						if (cubeJson.containsKey("name")) {
+						if (cubeJson.containsKey("name") && schema.getCubes().get(cubeJson.getString("name")) != null) {
 							// Get the Cube object (Olap4J) associated with this name
 							cubeObject = schema.getCubes().get(cubeJson.getString("name"));
 							// Initialize the query to be executed
 							myQuery = new Query("Select Query", cubeObject);
+
 							
 							if (cubeJson.containsKey("measures")) {
 								measuresJson = cubeJson.getJsonArray("measures");
@@ -83,13 +84,13 @@ public class Solap4py {
 							// TODO by Pierre.
 							if (cubeJson.containsKey("dimension")){
 								// Not implemented
-								myQuery = selectDimension(cubeJson.getJsonObject("dimension"), cubeObject, myQuery);
+								selectDimension(cubeJson.getJsonObject("dimension"), cubeObject, myQuery);
 							} else {
 								// All the dimensions are aggregated
 							}
 						}
 						else {
-							throw new Error(ErrorType.BAD_REQUEST, "Cube name not specified");
+							throw new Error(ErrorType.BAD_REQUEST, "Valid cube name not specified");
 						}
 						
 						
@@ -118,9 +119,7 @@ public class Solap4py {
 		return result;
 	}
 
-	private Query selectDimension(JsonObject dimension, Cube cubeObject, Query myQuery) throws Error {
-		Query res = myQuery; //= new String(json);
-
+	private void selectDimension(JsonObject dimension, Cube cubeObject, Query myQuery) throws Error {
 		String dimensionName;
 		try {
 			dimensionName = dimension.getString("name");
@@ -207,13 +206,11 @@ public class Solap4py {
 		JsonObject subDimension;
 		try {
 			subDimension = dimension.getJsonObject("dimension");
-			res = selectDimension(subDimension, cubeObject, res);
+			selectDimension(subDimension, cubeObject, myQuery);
 		} catch (JsonException e) {
 			
 		}
 		
-
-		return res;
 	}
 
 	/**
