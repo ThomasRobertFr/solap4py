@@ -15,14 +15,9 @@ public class Solap4pyEntryPoint{
         return mySolap4py;
     }
     
-    public void run(){
-    	GatewayServer gatewayServer = new GatewayServer(this);
-        gatewayServer.start();
-    }
-    
     public static void main(String[] args) {
-    	Solap4pyEntryPoint s = new Solap4pyEntryPoint();
-    	s.run();
+    	GatewayServer gatewayServer = new GatewayServer(new Solap4pyEntryPoint());
+        gatewayServer.start();
     }
 	
 	
