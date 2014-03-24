@@ -42,13 +42,6 @@ public class Error extends Exception {
 		throw new Error(ErrorType.BAD_REQUEST, "Error description");
 	}
 
-	public static void main(java.lang.String[] args) {
-		try {
-			controle();
-		} catch (Error e) {
-			System.out.println(e.getJSON().toString());
-		}
-		;
-	}
+
 
 }
