@@ -1,4 +1,4 @@
-import unittest, solap4py,time
+import unittest, solap4py,time,threading
 #from py4j.java_gateway import JavaGateway, GatewayClient
 
 class IntegrationTest(unittest.TestCase):
@@ -34,15 +34,21 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(result, '{"error":"OK","data":[{"[Measures].[Goods Quantity]":0,"[Time]":"[Time].[All Times].[1950]"}]}')
         
     def test_DTI_XX(self):
-        query = '{"queryType":"metadata","data":{"root":["Traffic", "[Traffic]", "[Zone]", "[Zone.Name]", "[Zone.Name].[Name0]"], "withProperties": true }}'
+
+        query = '{"queryType":"metadata","data":{"root":["Traffic", "[Traffic]", "[Zone]", "[Zone.Name]", "[Zone.Name].[Name2]"], "withProperties": true }}'
+
         #mon_fichier = open("/home/zangetsu/fichier.txt", "w")
-        a = time.clock()
+        a = time.time()
         #mon_fichier.write(solap4py.process(query))
         result = solap4py.process(query)
-        b = time.clock()
+        b = time.time()
         print b-a
         #mon_fichier.close()
-        self.assertEqual(1,1)
+        #self.assertEqual(1,1)
+        
+
+    def test_DTI_YY(self):
+        for i in range(50): threading.Thread(None, self.test_DTI_XX, None,(),{}).start()
     
 
 if __name__ == '__main__':
