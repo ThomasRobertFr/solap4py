@@ -56,7 +56,7 @@ class IntegrationTest(unittest.TestCase):
         benchResults[i] = b-a
         """
         #Measure the volume of the query
-        if self.nbUsers == 1 : 
+        if nbUsers == 1 : 
             resultFile = open('../resultOfQuery.txt','w')
             resultFile.write(result)
             resultFile.close()
@@ -90,8 +90,8 @@ class IntegrationTest(unittest.TestCase):
         directory = "../benchmark/"
         testNb = 15
         
-        timeNameFile =  time.strftime('_%d%m%y_%H%M%S',time.localtime())
-        timeTitle = time.strftime('%d/%m/%y %H:%M:%S',time.localtime())
+        timeNameFile =  time.strftime('_%Y%m%d_%H%M%S',time.localtime())
+        timeTitle = time.strftime('%d/%m/%Y %H:%M:%S',time.localtime())
         
         filepath = directory+'benchResults'+timeNameFile+'.txt'
         
