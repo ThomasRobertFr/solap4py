@@ -1,12 +1,29 @@
-import unittest, solap4py,time,threading
-#from py4j.java_gateway import JavaGateway, GatewayClient
+# -*-coding:Latin-1 -*
+
+import unittest, solap4py,time,threading, os
 
 class IntegrationTest(unittest.TestCase):
 
-    #def setUp(self):
-        #gateway = JavaGateway(GatewayClient(port=25335))
-        #self.solap4py = gateway.entry_point.getSolap4py();
-        #self.solap4py = Solap4py()
+# Real volumes
+# 10 MB = 5.9 MB
+# 5 MB = 8.2 MB
+# 1Mo = 0.939MB
+# 100kB = 300kB
+# 10kb = 13.2kB
+# 1kb = 3.5kB
+
+
+    nbUsers = 1
+    volumeKey = '1MB'
+    benchResults = nbUsers*[0]
+    threads = nbUsers*[None]
+    queries = {'1kB':" { \"root\" : [\"Traffic\", \"[Traffic]\", \"[Zone]\", \"[Zone.Name]\", \"[Zone.Name].[Name2]\", [\"[Zone.Name].[All Zone.Names].[France].[DÉPARTEMENTS D'OUTRE-MER].[Réunion]\"]], \"withProperties\":true, \"granularity\":0}}"}
+    queries['10kB']=" { \"root\" : [\"Traffic\", \"[Traffic]\", \"[Zone]\", \"[Zone.Name]\", \"[Zone.Name].[Name2]\", [\"[Zone.Name].[All Zone.Names].[France].[DÉPARTEMENTS D'OUTRE-MER].[Guadeloupe]\"]], \"withProperties\":true, \"granularity\":0}}"
+    queries['100kB']=" { \"root\" : [\"Traffic\", \"[Traffic]\", \"[Zone]\", \"[Zone.Name]\", \"[Zone.Name].[Name0]\", [\"[Zone.Name].[All Zone.Names].[France]\"]], \"withProperties\":true, \"granularity\":0}}"
+    queries['1MB']=" { \"root\" : [\"Traffic\", \"[Traffic]\", \"[Zone]\", \"[Zone.Name]\", \"[Zone.Name].[Name0]\", \"[Zone.Name].[All Zone.Names].[United Kingdom]\"], \"withProperties\":true, \"granularity\":2}}"
+    queries['10MB']=" { \"root\" : [\"Traffic\", \"[Traffic]\", \"[Zone]\", \"[Zone.Name]\", \"[Zone.Name].[Name2]\"], \"withProperties\":true, \"granularity\":0}}"
+    queries['5MB']=" { \"root\" : [\"Traffic\", \"[Traffic]\", \"[Zone]\", \"[Zone.Name]\", \"[Zone.Name].[Name0]\"], \"withProperties\":true, \"granularity\":0}}"
+    
 
     def test_DTI_06(self):
         query = '{"queryType":"metadata","data":{ "root" :["Traffic"]}}'
@@ -28,27 +45,58 @@ class IntegrationTest(unittest.TestCase):
         result = solap4py.process(query)
         self.assertEqual(result, '{"error":"OK","data":[{"[Measures].[Max Quantity]":311121,"[Time]":"[Time].[All Times].[2000]"},{"[Measures].[Max Quantity]":304574,"[Time]":"[Time].[All Times].[2001]"},{"[Measures].[Max Quantity]":310543,"[Time]":"[Time].[All Times].[2002]"},{"[Measures].[Max Quantity]":315811,"[Time]":"[Time].[All Times].[2003]"}]}')
 
-    def test_DTI10(self):
+    def test_DTI_10(self):
         query = '{"queryType":"data","data":{"from":"[Traffic]","onColumns":["[Measures].[Goods Quantity]"],"onRows":{"[Time]":{"members":["[Time].[All Times].[1950]"], "range":false}}}}'
         result = solap4py.process(query)
         self.assertEqual(result, '{"error":"OK","data":[{"[Measures].[Goods Quantity]":0,"[Time]":"[Time].[All Times].[1950]"}]}')
         
-    def test_DTI_XX(self):
-
-        query = '{"queryType":"metadata","data":{"root":["Traffic", "[Traffic]", "[Zone]", "[Zone.Name]", "[Zone.Name].[Name2]"], "withProperties": true }}'
-
-        #mon_fichier = open("/home/zangetsu/fichier.txt", "w")
+    def benchedMethod(self,i):
+        query = self.queries[self.volumeKey];
         a = time.time()
-        #mon_fichier.write(solap4py.process(query))
         result = solap4py.process(query)
         b = time.time()
         print b-a
-        #mon_fichier.close()
-        #self.assertEqual(1,1)
-        
+        self.benchResults[i] = b-a
+        """
+        #Measure the volume of the query
+        if self.nbUsers == 1 : 
+            resultFile = open('../resultOfQuery.txt','w')
+            resultFile.write(result)
+            resultFile.close()
+        """
 
-    def test_DTI_YY(self):
-        for i in range(50): threading.Thread(None, self.test_DTI_XX, None,(),{}).start()
+    def test_DTI_XX(self):
+        
+        prefix = '{"queryType":"metadata","data":'
+        suffix = '}'
+        self.queries[self.volumeKey] = prefix + self.queries[self.volumeKey] + suffix  
+        
+        
+        
+        for i in range(self.nbUsers):
+            self.threads[i] = threading.Thread(None,self.benchedMethod,None, (i,),{} )
+            self.threads[i].start()
+            
+        for i in range(self.nbUsers):
+            self.threads[i].join()
+            
+        directory = "../benchmark/"
+        filename = 'benchResults.txt'
+        
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+            
+        if os.path.isfile(directory+filename):
+            my_file = open(directory+filename, "a")
+        else:
+            my_file = open(directory+filename, "w")
+            
+        meanBenchResult = sum(self.benchResults)/float(len(self.benchResults))
+
+        my_file.write( str(self.nbUsers) + ' users ' + self.volumeKey + ' : ' + str(meanBenchResult) + '\n' )
+        my_file.close()
+        
+            
     
 
 if __name__ == '__main__':
