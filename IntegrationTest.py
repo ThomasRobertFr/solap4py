@@ -75,7 +75,7 @@ class IntegrationTest(unittest.TestCase):
             threads[i].join()            
             
         meanBenchResult = sum(benchResults)/float(len(benchResults))
-        return str(nbUsers) + ' users ' + volume + ' : ' + str(meanBenchResult) + '\n'
+        return volume + ' : ' + str(meanBenchResult) + '\n'
     
         
     def prepareQueries(self):
