@@ -12,11 +12,9 @@ class IntegrationTest(unittest.TestCase):
 # 10kb = 13.2kB
 # 1kb = 3.5kB
 
-
-    nbUsers = 1
-    volumeKey = '1MB'
-    benchResults = nbUsers*[0]
-    threads = nbUsers*[None]
+    benchedUsers = (1,2,5,10,20,50)
+    benchedVolumes = ('1kB','10kB','100kB','1MB','5MB','10MB')
+    
     queries = {'1kB':" { \"root\" : [\"Traffic\", \"[Traffic]\", \"[Zone]\", \"[Zone.Name]\", \"[Zone.Name].[Name2]\", [\"[Zone.Name].[All Zone.Names].[France].[DÉPARTEMENTS D'OUTRE-MER].[Réunion]\"]], \"withProperties\":true, \"granularity\":0}}"}
     queries['10kB']=" { \"root\" : [\"Traffic\", \"[Traffic]\", \"[Zone]\", \"[Zone.Name]\", \"[Zone.Name].[Name2]\", [\"[Zone.Name].[All Zone.Names].[France].[DÉPARTEMENTS D'OUTRE-MER].[Guadeloupe]\"]], \"withProperties\":true, \"granularity\":0}}"
     queries['100kB']=" { \"root\" : [\"Traffic\", \"[Traffic]\", \"[Zone]\", \"[Zone.Name]\", \"[Zone.Name].[Name0]\", [\"[Zone.Name].[All Zone.Names].[France]\"]], \"withProperties\":true, \"granularity\":0}}"
@@ -50,13 +48,12 @@ class IntegrationTest(unittest.TestCase):
         result = solap4py.process(query)
         self.assertEqual(result, '{"error":"OK","data":[{"[Measures].[Goods Quantity]":0,"[Time]":"[Time].[All Times].[1950]"}]}')
         
-    def benchedMethod(self,i):
-        query = self.queries[self.volumeKey];
+    def benchedMethod(self,i,volume,benchResults):
+        query = self.queries[volume];
         a = time.time()
         result = solap4py.process(query)
         b = time.time()
-        print b-a
-        self.benchResults[i] = b-a
+        benchResults[i] = b-a
         """
         #Measure the volume of the query
         if self.nbUsers == 1 : 
@@ -65,39 +62,60 @@ class IntegrationTest(unittest.TestCase):
             resultFile.close()
         """
 
-    def test_DTI_XX(self):
+    def oneBench(self,nbUsers,volume):
+               
+        threads = nbUsers*[None]
+        benchResults = nbUsers*[0]
+        
+        for i in range(nbUsers):
+            threads[i] = threading.Thread(None,self.benchedMethod,None, (i,volume,benchResults),{} )
+        for i in range(nbUsers):
+            threads[i].start()            
+        for i in range(nbUsers):
+            threads[i].join()            
+            
+        meanBenchResult = sum(benchResults)/float(len(benchResults))
+        return str(nbUsers) + ' users ' + volume + ' : ' + str(meanBenchResult) + '\n'
+    
+        
+    def prepareQueries(self):
         
         prefix = '{"queryType":"metadata","data":'
         suffix = '}'
-        self.queries[self.volumeKey] = prefix + self.queries[self.volumeKey] + suffix  
+        for i in range(len(self.benchedVolumes)):
+            self.queries[self.benchedVolumes[i]] = prefix + self.queries[self.benchedVolumes[i]] + suffix      
+                
+    def test_DTI_XX(self):
         
-        
-        
-        for i in range(self.nbUsers):
-            self.threads[i] = threading.Thread(None,self.benchedMethod,None, (i,),{} )
-            self.threads[i].start()
-            
-        for i in range(self.nbUsers):
-            self.threads[i].join()
-            
         directory = "../benchmark/"
-        filename = 'benchResults.txt'
+        testNb = 15
+        
+        timeNameFile =  time.strftime('_%d%m%y_%H%M%S',time.localtime())
+        timeTitle = time.strftime('%d/%m/%y %H:%M:%S',time.localtime())
+        
+        filepath = directory+'benchResults'+timeNameFile+'.txt'
         
         if not os.path.exists(directory):
             os.makedirs(directory)
             
-        if os.path.isfile(directory+filename):
-            my_file = open(directory+filename, "a")
+        if os.path.isfile(filepath):
+            my_file = open(filepath, "a")
         else:
-            my_file = open(directory+filename, "w")
-            
-        meanBenchResult = sum(self.benchResults)/float(len(self.benchResults))
-
-        my_file.write( str(self.nbUsers) + ' users ' + self.volumeKey + ' : ' + str(meanBenchResult) + '\n' )
-        my_file.close()
+            my_file = open(filepath, "w")
         
-            
-    
+        my_file.write('INTEGRATION TEST '+timeTitle+'\n')
+        
+        self.prepareQueries()
+        for i in range(len(self.benchedUsers)):
+            my_file.write('\n 5.'+str(i+1)+' Pour '+ str(self.benchedUsers[i]) +' utilisateur(s) \n \n')
+            for j in range(len(self.benchedVolumes)):
+                testNb += 1
+                my_string = 'test DTI n� '+ str(testNb) +' : '
+                my_file.write(my_string +self.oneBench(self.benchedUsers[i],self.benchedVolumes[j]))
+                
+        my_file.close()
+               
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(IntegrationTest)
