@@ -4,7 +4,7 @@ import unittest, solap4py,time,threading, os
 
 class IntegrationTest(unittest.TestCase):
 
-# Real volumes
+# Actual volumes
 # 10 MB = 5.9 MB
 # 5 MB = 8.2 MB
 # 1Mo = 0.939MB
